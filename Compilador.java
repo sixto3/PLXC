@@ -110,6 +110,7 @@ public class Compilador {
 
     public static void asigArray(String ident, String pos, String valor){
         checkDeclaracion("asignacion", ident);
+        comprobacionDeRango(ident, pos);
         String tipo_ident = getTypeDefinitivo(ident);
         String tipo_valor = getTypeDefinitivo(valor);
         if(!tipo_ident.equals(tipo_valor)){
@@ -119,9 +120,25 @@ public class Compilador {
         }
     }
 
+    public static void comprobacionDeRango(String ident, String pos){
+        TuplaEtiquetas tupla = new TuplaEtiquetas(newEtiq(), newEtiq());
+        String etTrue = tupla.getEtTrue();
+        String etFalse = tupla.getEtFalse();
+        String tam = variables.get(ident).getTam();
+        PLXC.out.println("   if(" + pos + " < 0) goto " + etTrue + ";" );
+        PLXC.out.println("   if(" + tam + " < " + pos +") goto " + etTrue + ";" );
+        PLXC.out.println("   if(" + tam + " == " + pos + ") goto " + etTrue + ";" );
+        PLXC.out.println("   goto " + etFalse + ";");
+        pintarEtiqueta(etTrue);
+        PLXC.out.println("   error;");
+        PLXC.out.println("   halt;");
+        pintarEtiqueta(etFalse);
+    }
+
     public static String posicionArray(String ident, String e){
         String aux = newVar();
         String tipo = getTypeDefinitivo(ident);
+        comprobacionDeRango(ident, e);
         switch(tipo){
             case "int":
                 declarar(aux, "int");
