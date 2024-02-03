@@ -10,7 +10,8 @@ public class Compilador {
         for(String key : variables.keySet()){
             String tipo = variables.get(key).getTipo();
             String valor = variables.get(key).getValor();
-            PLXC.out.println("#(" + key + ", " + tipo + ", " + valor + ")");
+            String tam = variables.get(key).getTam();
+            PLXC.out.println("#(" + key + ", " + tipo + ", " + valor + ", " + tam + ")");
         }
     }
 
@@ -32,7 +33,7 @@ public class Compilador {
             }else{
                 PLXC.out.println("   " + ident + " = " + valor + ";");
             }
-            variables.put(ident, new Tupla(tipo, variables.get(valor).getValor()));
+            variables.put(ident, new Tupla(tipo, variables.get(valor).getValor(), "0"));
         }else{ //valor no es una variable
             /*if(valor.contains("(char)")){
                 valor = valor.substring(6, valor.length());
@@ -43,7 +44,7 @@ public class Compilador {
                 valor = String.valueOf((int) valor.charAt(1));
             }
             entra = true;
-            variables.put(ident, new Tupla(tipo, valor));
+            variables.put(ident, new Tupla(tipo, valor, "0"));
         }
         
         if(entra) PLXC.out.println("   " + ident + " = " + valor + ";");
@@ -75,12 +76,12 @@ public class Compilador {
                     if(tipo_ident.equals("float") && tipo_valor.equals("int")){ //float = int
                         asigFloat(ident, valor);
                     }else{
-                        variables.put(ident, new Tupla(tipo_valor, valor));
+                        variables.put(ident, new Tupla(tipo_valor, valor, "0"));
                         PLXC.out.println("   " + ident + " = " + valor + ";");
                     }
                 }
             }else{
-                variables.put(ident, new Tupla(tipo_valor, valor));
+                variables.put(ident, new Tupla(tipo_valor, valor, "0"));
                 PLXC.out.println("   " + ident + " = " + valor + ";");
             }
         }else{
@@ -107,11 +108,41 @@ public class Compilador {
         }
     }
 
+    public static void asigArray(String ident, String pos, String valor){
+        checkDeclaracion("asignacion", ident);
+        String tipo_ident = getTypeDefinitivo(ident);
+        String tipo_valor = getTypeDefinitivo(valor);
+        if(!tipo_ident.equals(tipo_valor)){
+
+        }else{
+            PLXC.out.println("   " + ident + "[" + pos + "] = " + valor + ";");
+        }
+    }
+
+    public static String posicionArray(String ident, String e){
+        String aux = newVar();
+        String tipo = getTypeDefinitivo(ident);
+        switch(tipo){
+            case "int":
+                declarar(aux, "int");
+                PLXC.out.println("   " + aux + " = " + ident + "[" + e + "];");
+                break;
+            case "float":
+                declarar(aux, "float");
+                PLXC.out.println("   " + aux + " = " + ident + "[" + e + "];");
+                break;
+            
+            default:
+                break;
+        }
+        return aux;
+    }
+
     public static void asigFloat(String ident, String valor){
         //checkDeclaracion("asignacion", ident);
         //boolean esVariable = valor.matches("[a-zA-Z][a-zA-Z0-9]*");
         //String tipo_valor, tipo = variables.get(ident).getTipo();
-        variables.put(ident, new Tupla("float", valor));        
+        variables.put(ident, new Tupla("float", valor, "0"));        
         PLXC.out.println("   " + ident + " = (float) " + valor + ";");
     }
 
@@ -122,7 +153,7 @@ public class Compilador {
         if(isType(valor, "char") && !isVar(valor)){
             valor = creaChar(valor);
         }
-        variables.put(ident, new Tupla("int", valor));        
+        variables.put(ident, new Tupla("int", valor, "0"));        
         PLXC.out.println("   " + ident + " = (int) " + valor + ";");
 
     }
@@ -135,7 +166,7 @@ public class Compilador {
         if(isType(valor, "char") && !isVar(valor)){
             //valor = creaChar(valor);
         }
-        variables.put(ident, new Tupla("char", valor));        
+        variables.put(ident, new Tupla("char", valor, "0"));        
         PLXC.out.println("   " + ident + " = " + valor + ";");
 
     }
@@ -170,20 +201,39 @@ public class Compilador {
 
         switch(tipo){
             case "int":
-                variables.put(ident, new Tupla("int", "0"));
+                variables.put(ident, new Tupla("int", "0", "0"));
                 break;
             case "float":
-                variables.put(ident, new Tupla("float", "0.0"));
+                variables.put(ident, new Tupla("float", "0.0", "0"));
                 break;
             case "char":
-                variables.put(ident, new Tupla("char", "0"));
+                variables.put(ident, new Tupla("char", "0", "0"));
                 break;
             case "String":
-                variables.put(ident, new Tupla("String", ""));
+                variables.put(ident, new Tupla("String", "", "0"));
                 break;
 
             default:
-                variables.put(ident, new Tupla("", ""));
+                variables.put(ident, new Tupla("", "", "0"));
+                break;
+        }
+    }
+
+    public static void declararArray(String ident, String tipo, String tam){
+        checkDeclaracion("declaracion", ident);
+
+        switch(tipo){
+            case "int":
+                variables.put(ident, new Tupla("int", "0", tam));
+                PLXC.out.println("   " + ident + "_length = " + tam + ";");
+                break;
+            case "float":
+                variables.put(ident, new Tupla("float", "0", tam));
+                PLXC.out.println("   " + ident + "_length = " + tam + ";");
+                break;
+
+            default:
+                variables.put(ident, new Tupla("", "", ""));
                 break;
         }
     }
@@ -395,6 +445,23 @@ public class Compilador {
             result = "float";
         }else if (e.matches("'(\\\\([\\\"'\\\\bfnrt]|u[0-9A-Fa-f]{4})|[^\\\\'])'")){
             result = "char";
+        }
+        return result;
+    }
+
+    public static String getTypeDefinitivo(String e){
+        String result = "";
+        boolean isVar = isVar(e);
+        if(isVar){
+            result = variables.get(e).getTipo();
+        }else{
+            if(e.matches("0|[1-9][0-9]*")){
+                result = "int";
+            }else if (e.matches("[0-9]*[.][0-9]+([eE][-+]?[0-9]+)?")){
+                result = "float";
+            }else if (e.matches("'(\\\\([\\\"'\\\\bfnrt]|u[0-9A-Fa-f]{4})|[^\\\\'])'")){
+                result = "char";
+            }
         }
         return result;
     }

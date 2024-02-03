@@ -7,7 +7,7 @@ action code {:
 :}
 
 
-terminal PYC, AP, CP, IF, ELSE, WHILE, DO, FOR, ALL, CLL, PRINT, COMA;
+terminal PYC, AP, CP, IF, ELSE, WHILE, DO, FOR, ALL, CLL, PRINT, COMA, AC, CC;
 terminal MAS, MENOS, POR, DIV, MENOSUNARIO, ASIG;
 terminal IGUAL, DISTINTO, MAYOR, MENOR, MENOROIGUAL, MAYOROIGUAL;
 terminal AND, OR, NEG;
@@ -86,6 +86,7 @@ exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :
     |   CFLOAT {: cast = "(float)"; :} exp:e {: RESULT = e;  :}
     |   CINT {: cast = "(int)"; :} exp:e {: RESULT = Compilador.newVar(); Compilador.asigInt(RESULT, e); :}
     |   CCHAR {: cast = "(char)"; :} exp:e {: RESULT = Compilador.newVar(); Compilador.declarar(RESULT, "char"); Compilador.asigAlternativo(RESULT, e, cast); cast=""; :}
+    |   IDENT:i AC exp:e CC {: RESULT = Compilador.posicionArray(i, e); :}
     |   {::}
     ;
 
@@ -108,6 +109,8 @@ lista_variables_char   ::= item_char COMA lista_variables_char
 
 item_int    ::= IDENT:i {: Compilador.declarar(i, "int"); :}
             |   IDENT:i ASIG exp:e {: Compilador.declarar(i, "int"); Compilador.asigAlternativo(i, e, cast); cast = ""; :}
+            |   IDENT:i AC ENTERO:tam CC {: Compilador.declararArray(i, "int", tam); :}
+            |   IDENT:i AC ENTERO:tam CC ASIG exp:e {: Compilador.declararArray(i, "int", tam); Compilador.asigArray(i, tam, e); :}
             ;
 
 item_float    ::= IDENT:i {: Compilador.declarar(i, "float"); :}
@@ -119,6 +122,7 @@ item_char    ::= IDENT:i {: Compilador.declarar(i, "char"); :}
             ;
 
 asignacion  ::= IDENT:i ASIG exp:e {: RESULT = e; Compilador.asigAlternativo(i, RESULT, cast); cast = ""; :}
+            |   IDENT:i AC exp:pos CC ASIG exp:e {: RESULT = e; Compilador.asigArray(i, pos, e); :}
             ;
 
 while   ::= WHILE {: RESULT = Compilador.newEtiq(); :}

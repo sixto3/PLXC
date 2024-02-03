@@ -3,10 +3,12 @@
 public class Tupla {
     private String tipo;
     private String valor;
+    private String tam;
 
-    public Tupla(String tipo, String valor) {
+    public Tupla(String tipo, String valor, String tam) {
         this.tipo = tipo;
         this.valor = valor;
+        this.tam = tam;
     }
 
     public Tupla(String tipo){
@@ -30,6 +32,13 @@ public class Tupla {
         this.valor = valor;
     }
 
+    public String getTam() {
+        return tam;
+    }
+
+    public void setTam(String tam) {
+        this.tam = tam;
+    }
     
     
 }
