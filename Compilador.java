@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Compilador {
     private static HashMap<String, Tupla> variables = new HashMap<>();
@@ -149,6 +150,30 @@ public class Compilador {
                 PLXC.out.println("   " + aux + " = " + valor + "[" + i + "];");
                 PLXC.out.println("   " + ident + "[" + i + "] = " + aux + ";");
             }
+        }
+    }
+
+    public static void inicializarArray(String ident, ArrayList<String> valores){
+        checkDeclaracion("asignacion", ident);
+        int num_valores = valores.size();
+        int tam_array = Integer.parseInt(variables.get(ident).getTam());
+        String aux;
+        String tipo_array = getTypeDefinitivo(ident);
+        String tipo_valor;
+        if(tam_array < num_valores){
+            error("las dimensiones de los arrays no encajan");
+        }else{
+            aux = newVar();
+            declarar(aux, tipo_array);
+            for(int i=0; i<num_valores; i++){
+                tipo_valor = getTypeDefinitivo(valores.get(i));
+                if(!tipo_valor.equals(tipo_array)){
+                    error("error de tipos");
+                }else{
+                    PLXC.out.println("   " + aux + " = " + valores.get(i) + ";");
+                    PLXC.out.println("   " + ident + "[" + i + "] = " + aux + ";");
+                }
+            }    
         }
     }
 

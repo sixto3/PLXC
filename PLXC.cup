@@ -4,6 +4,7 @@ import java.util.ArrayList;
 action code {:
     boolean declaracion = false;
     String cast = "";
+    ArrayList<String> array;
 :}
 
 
@@ -16,7 +17,7 @@ terminal CINT, CFLOAT, CCHAR;
 terminal String IDENT, ENTERO, REAL, CHARTEXT;
 
 
-non terminal starter, lista_sent, sent, else, declaracion, lista_variables_int, item_int, lista_variables_float, item_float, lista_variables_char, item_char;
+non terminal starter, lista_sent, sent, else, declaracion, lista_variables_int, item_int, lista_variables_float, item_float, lista_variables_char, item_char, arrayLlaves;
 non terminal String exp, asignacion, while, if, do, for;
 
 precedence right ASIG;
@@ -125,6 +126,7 @@ item_char    ::= IDENT:i {: Compilador.declarar(i, "char"); :}
 
 asignacion  ::= IDENT:i ASIG exp:e {: RESULT = e; Compilador.asigAlternativo(i, RESULT, cast); cast = ""; :}
             |   IDENT:i AC exp:pos CC ASIG exp:e {: RESULT = e; Compilador.asigArray(i, pos, e); :}
+            |   IDENT:i ASIG ALL {: array = new ArrayList<>(); :} arrayLlaves CLL {: RESULT = i; Compilador.inicializarArray(i, array); array.clear(); :}
             ;
 
 while   ::= WHILE {: RESULT = Compilador.newEtiq(); :}
@@ -138,3 +140,7 @@ do  ::= DO {: RESULT = Compilador.newEtiq(); :}
 
 for ::= FOR {: RESULT = Compilador.generarTuplaEtiquetasString(); :}
     ;
+
+arrayLlaves ::= arrayLlaves:a COMA exp:e {: array.add(e); :}
+            |   exp:e {: array.add(e);  :}  
+            ;
