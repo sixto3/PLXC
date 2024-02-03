@@ -53,17 +53,17 @@ public class Compilador {
 
     public static void asigAlternativo(String ident, String valor, String cast){
         checkDeclaracion("asignacion", ident);
-        String tipo_ident = variables.get(ident).getTipo();
-        String tipo_valor;
-        boolean valor_isVar = isVar(valor);
+        String tipo_ident = getTypeDefinitivo(ident);
+        String tipo_valor = getTypeDefinitivo(valor);
+        //boolean valor_isVar = isVar(valor);
         String aux;
-        if(valor_isVar) tipo_valor = variables.get(valor).getTipo();
-        else {
-            tipo_valor = getType(valor);
-            if(tipo_valor.equals("char")){
-                valor = creaChar(valor);
-            }
+        //if(valor_isVar) tipo_valor = variables.get(valor).getTipo();
+        //else {
+            //tipo_valor = getType(valor);
+        if(tipo_valor.equals("char") && !isVar(valor)){
+            valor = creaChar(valor);
         }
+        //}
         if(cast.isEmpty()){ //si no hay cast
             if(!tipo_ident.equals(tipo_valor)){ //si los tipos son distintos
                 if(tipo_ident.equals("int") && tipo_valor.equals("float")){ //int = float
@@ -71,6 +71,8 @@ public class Compilador {
                 }else if(tipo_ident.equals("char") && tipo_valor.equals("int")){ //char = int
                     error("error de tipos");
                 }else if(tipo_ident.equals("int") && tipo_valor.equals("char")){ //int = char
+                    error("error de tipos");
+                }else if(!variables.get(ident).getTam().equals("0") && !variables.get(valor).getTam().equals("0")){
                     error("error de tipos");
                 }else{
                     if(tipo_ident.equals("float") && tipo_valor.equals("int")){ //float = int
@@ -81,8 +83,12 @@ public class Compilador {
                     }
                 }
             }else{
-                variables.put(ident, new Tupla(tipo_valor, valor, "0"));
-                PLXC.out.println("   " + ident + " = " + valor + ";");
+                if(!variables.get(ident).getTam().equals("0") && !variables.get(valor).getTam().equals("0")){
+                    asigDosArrays(ident, valor);
+                }else{
+                    variables.put(ident, new Tupla(tipo_valor, valor, "0"));
+                    PLXC.out.println("   " + ident + " = " + valor + ";");
+                }
             }
         }else{
             if(cast.equals("(int)")){
@@ -109,14 +115,40 @@ public class Compilador {
     }
 
     public static void asigArray(String ident, String pos, String valor){
+        String aux;
         checkDeclaracion("asignacion", ident);
         comprobacionDeRango(ident, pos);
         String tipo_ident = getTypeDefinitivo(ident);
         String tipo_valor = getTypeDefinitivo(valor);
         if(!tipo_ident.equals(tipo_valor)){
+            if(tipo_ident.equals("int") && tipo_valor.equals("float")){
+                error("error de tipos");
+            }else if(tipo_ident.equals("float") && tipo_valor.equals("int")){
+                aux = newVar();
+                declarar(aux, "float");
+                asigFloat(aux, valor);
+                PLXC.out.println("   " + ident + "[" + pos + "] = " + aux + ";");
+            }
 
         }else{
             PLXC.out.println("   " + ident + "[" + pos + "] = " + valor + ";");
+        }
+    }
+
+    public static void asigDosArrays(String ident, String valor){
+        int tam_ident = Integer.parseInt(variables.get(ident).getTam());
+        int tam_valor = Integer.parseInt(variables.get(valor).getTam());
+        String tipo = getTypeDefinitivo(ident);
+        String aux;
+        if(tam_ident < tam_valor){
+            error("rangos incorrectos");
+        }else{
+            aux = newVar();
+            declarar(aux, tipo);
+            for(int i=0; i<tam_valor; i++){
+                PLXC.out.println("   " + aux + " = " + valor + "[" + i + "];");
+                PLXC.out.println("   " + ident + "[" + i + "] = " + aux + ";");
+            }
         }
     }
 

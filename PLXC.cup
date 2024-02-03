@@ -115,6 +115,8 @@ item_int    ::= IDENT:i {: Compilador.declarar(i, "int"); :}
 
 item_float    ::= IDENT:i {: Compilador.declarar(i, "float"); :}
             |   IDENT:i ASIG exp:e {: Compilador.declarar(i, "float"); Compilador.asigAlternativo(i, e, cast); cast = ""; :}
+            |   IDENT:i AC ENTERO:tam CC {: Compilador.declararArray(i, "float", tam); :}
+            |   IDENT:i AC ENTERO:tam CC ASIG exp:e {: Compilador.declararArray(i, "float", tam); Compilador.asigArray(i, tam, e); :}
             ;
 
 item_char    ::= IDENT:i {: Compilador.declarar(i, "char"); :}
