@@ -1,0 +1,134 @@
+import java_cup.runtime.*;
+import java.util.ArrayList;
+
+action code {:
+    boolean declaracion = false;
+    String cast = "";
+:}
+
+
+terminal PYC, AP, CP, IF, ELSE, WHILE, DO, FOR, ALL, CLL, PRINT, COMA;
+terminal MAS, MENOS, POR, DIV, MENOSUNARIO, ASIG;
+terminal IGUAL, DISTINTO, MAYOR, MENOR, MENOROIGUAL, MAYOROIGUAL;
+terminal AND, OR, NEG;
+terminal INT, FLOAT, CHAR;
+terminal CINT, CFLOAT, CCHAR;
+terminal String IDENT, ENTERO, REAL, CHARTEXT;
+
+
+non terminal starter, lista_sent, sent, else, declaracion, lista_variables_int, item_int, lista_variables_float, item_float, lista_variables_char, item_char;
+non terminal String exp, asignacion, while, if, do, for;
+
+precedence right ASIG;
+precedence left OR;
+precedence left AND;
+precedence right NEG;
+precedence left IGUAL, DISTINTO, MAYOR, MENOR, MENOROIGUAL, MAYOROIGUAL;
+precedence left MAS, MENOS;
+precedence left POR, DIV;
+precedence right CINT, CFLOAT, CCHAR;
+precedence right MENOSUNARIO;
+precedence nonassoc IF;
+precedence nonassoc ELSE;
+/*GRAMMAR*/
+start with starter;
+
+starter ::=   lista_sent  {: Compilador.imprimirResultados(); :}
+        ;
+ 
+lista_sent  ::= lista_sent sent
+            |   sent
+            ;
+
+sent    ::= exp PYC
+        |   if:etiq AP exp:e CP {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e)); :}
+                        sent {: Compilador.goTo(etiq); Compilador.pintarEtiqueta(Compilador.getEtFalse(e)); :}
+                        else {: Compilador.pintarEtiqueta(etiq); :}
+        |   while:etiq {: Compilador.pintarEtiqueta(etiq); :} AP exp:e CP {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e)); :} 
+                                                                    sent {: Compilador.goTo(etiq); Compilador.pintarEtiqueta(Compilador.getEtFalse(e)); :}
+        |   do:etiq {: Compilador.pintarEtiqueta(etiq); :} sent WHILE AP exp:e CP PYC {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e));
+                                                                                         Compilador.goTo(etiq); Compilador.pintarEtiqueta(Compilador.getEtFalse(e)); :}
+        |   for:tupla AP exp:e1 {: Compilador.pintarEtiqueta(Compilador.getEtTrue(tupla)); :} PYC 
+                            exp:e2 {: Compilador.pintarEtiqueta(Compilador.getEtFalse(tupla)); :} PYC 
+                            exp:e3 {: Compilador.goTo(Compilador.getEtTrue(tupla)); Compilador.pintarEtiqueta(Compilador.getEtTrue(e2)); :} CP 
+                            sent {: Compilador.goTo(Compilador.getEtFalse(tupla)); Compilador.pintarEtiqueta(Compilador.getEtFalse(e2)); :}
+        |   ALL lista_sent CLL
+        |   PRINT AP exp:e CP PYC {: Compilador.print(e); cast = ""; :}
+        |   declaracion {: declaracion = false; :} PYC
+        ;
+
+else    ::= ELSE sent
+        |
+        ;
+         
+exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :}
+    |   exp:e1 MENOS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "-", cast); :}
+    |   exp:e1 DIV exp:e2 {: RESULT = Compilador.operacion(e1, e2, "/", cast); :}
+    |   exp:e1 POR exp:e2 {: RESULT = Compilador.operacion(e1, e2, "*", cast); :}
+    |   MENOS exp:e {: RESULT = Compilador.menosUnario(e); :} %prec MENOSUNARIO
+    |   AP exp:e CP {: RESULT = e;:}
+    |   asignacion:a {: RESULT = a; :}
+    |   IDENT:i {:  RESULT = i; Compilador.checkDeclaracion("asignacion", RESULT); :}
+    |   ENTERO:e {: RESULT = e; :}
+    |   REAL:e  {: RESULT = e; :}
+    |   CHARTEXT:e {: RESULT = e; :}
+    |   exp:e1 IGUAL exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "igual"); :}
+    |   exp:e1 DISTINTO exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "distinto"); :}
+    |   exp:e1 MENOR exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "menor"); :}
+    |   exp:e1 MAYOR exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "mayor"); :}
+    |   exp:e1 MENOROIGUAL exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "menoroigual"); :}
+    |   exp:e1 MAYOROIGUAL exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "mayoroigual"); :}
+    |   exp:e1 AND {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e1)); :} 
+                   exp:e2 {: RESULT = e2; Compilador.pintarEtiqueta(Compilador.getEtFalse(e1)); Compilador.goTo(Compilador.getEtFalse(e2)); :}
+    |   exp:e1 OR {: Compilador.pintarEtiqueta(Compilador.getEtFalse(e1)); :} 
+                  exp:e2 {: RESULT = e2; Compilador.pintarEtiqueta(Compilador.getEtTrue(e1)); Compilador.goTo(Compilador.getEtTrue(e2)); :}
+    |   NEG exp:e {: RESULT = Compilador.cambiarEtiqueta(e); :}
+    |   CFLOAT {: cast = "(float)"; :} exp:e {: RESULT = e;  :}
+    |   CINT {: cast = "(int)"; :} exp:e {: RESULT = Compilador.newVar(); Compilador.asigInt(RESULT, e); :}
+    |   CCHAR {: cast = "(char)"; :} exp:e {: RESULT = Compilador.newVar(); Compilador.declarar(RESULT, "char"); Compilador.asigAlternativo(RESULT, e, cast); cast=""; :}
+    |   {::}
+    ;
+
+declaracion ::= INT {: declaracion = true; :} lista_variables_int
+            |   FLOAT {: declaracion = true; :} lista_variables_float
+            |   CHAR {: declaracion = true; :} lista_variables_char
+            ;
+
+lista_variables_int ::= item_int COMA lista_variables_int
+                    |   item_int
+                    ;
+
+lista_variables_float   ::= item_float COMA lista_variables_float
+                    |   item_float
+                    ;
+
+lista_variables_char   ::= item_char COMA lista_variables_char
+                    |   item_char
+                    ;
+
+item_int    ::= IDENT:i {: Compilador.declarar(i, "int"); :}
+            |   IDENT:i ASIG exp:e {: Compilador.declarar(i, "int"); Compilador.asigAlternativo(i, e, cast); cast = ""; :}
+            ;
+
+item_float    ::= IDENT:i {: Compilador.declarar(i, "float"); :}
+            |   IDENT:i ASIG exp:e {: Compilador.declarar(i, "float"); Compilador.asigAlternativo(i, e, cast); cast = ""; :}
+            ;
+
+item_char    ::= IDENT:i {: Compilador.declarar(i, "char"); :}
+            |   IDENT:i ASIG {: Compilador.declarar(i, "char"); :} exp:e {: Compilador.asigAlternativo(i, e, cast); cast = ""; :}
+            ;
+
+asignacion  ::= IDENT:i ASIG exp:e {: RESULT = e; Compilador.asigAlternativo(i, RESULT, cast); cast = ""; :}
+            ;
+
+while   ::= WHILE {: RESULT = Compilador.newEtiq(); :}
+        ;
+
+if  ::= IF {: RESULT = Compilador.newEtiq(); :}
+    ;
+
+do  ::= DO {: RESULT = Compilador.newEtiq(); :}
+    ;
+
+for ::= FOR {: RESULT = Compilador.generarTuplaEtiquetasString(); :}
+    ;
