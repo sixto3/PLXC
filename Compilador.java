@@ -589,4 +589,8 @@ public class Compilador {
 		return Integer.toString(ascii);
 	}
 
+    public static boolean isArray(String x){
+        return Integer.parseInt(variables.get(x).getTam())>0;
+    }
+
 }
