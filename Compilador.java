@@ -348,9 +348,34 @@ public class Compilador {
             PLXC.out.println("   printc " + e + ";");
         }else{
             PLXC.out.println("   print " + e + ";");
+        }      
+    }
+
+    public static void printArray(String e){
+        int tam = Integer.parseInt(variables.get(e).getTam());
+        String tipo = getTypeDefinitivo(e);
+        String aux = newVar();
+        declarar(aux, tipo);
+        for(int i=0; i<tam; i++){
+            PLXC.out.println("   " + aux + " = " + e + "[" + i + "];");
+            print(aux);
         }
-               
-        
+    }
+
+    public static void printArrayLlaves(ArrayList<String> valores){
+        int tam = valores.size();
+        String tipo_array = getTypeDefinitivo(valores.get(0));
+        String valor, tipo_valor;
+        String aux = newVar();
+        declarar(aux, tipo_array);
+        for(int i=0; i<tam; i++){
+            valor = valores.get(i);
+            tipo_valor = getTypeDefinitivo(valor);
+            if(!tipo_valor.equals(tipo_array)) error("error de tipos");
+            if(tipo_valor.equals("char")) valor = creaChar(valor);
+            PLXC.out.println("   " + aux + " = " + valor + ";");
+            print(aux);
+        }
     }
 
     public static String newVar(){
@@ -590,7 +615,9 @@ public class Compilador {
 	}
 
     public static boolean isArray(String x){
-        return Integer.parseInt(variables.get(x).getTam())>0;
+
+        if(isVar(x)) return Integer.parseInt(variables.get(x).getTam())>0;
+        return false;
     }
 
 }

@@ -55,7 +55,8 @@ sent    ::= exp PYC
                             exp:e3 {: Compilador.goTo(Compilador.getEtTrue(tupla)); Compilador.pintarEtiqueta(Compilador.getEtTrue(e2)); :} CP 
                             sent {: Compilador.goTo(Compilador.getEtFalse(tupla)); Compilador.pintarEtiqueta(Compilador.getEtFalse(e2)); :}
         |   ALL lista_sent CLL
-        |   PRINT AP exp:e CP PYC {: Compilador.print(e); cast = ""; :}
+        |   PRINT AP exp:e CP PYC {: if(!Compilador.isArray(e)) Compilador.print(e); else Compilador.printArray(e); cast = ""; :}
+        |   PRINT AP ALL {: array = new ArrayList<>(); :} arrayLlaves CLL CP PYC {: Compilador.printArrayLlaves(array); array.clear(); :}
         |   declaracion {: declaracion = false; :} PYC
         ;
 
