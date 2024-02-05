@@ -121,8 +121,15 @@ public class Compilador {
         comprobacionDeRango(ident, pos);
         String tipo_ident = getTypeDefinitivo(ident);
         String tipo_valor = getTypeDefinitivo(valor);
+
+        if(tipo_valor.equals("char") && !isVar(valor)) valor = creaChar(valor);
+
         if(!tipo_ident.equals(tipo_valor)){
             if(tipo_ident.equals("int") && tipo_valor.equals("float")){
+                error("error de tipos");
+            }else if(tipo_ident.equals("char") && !tipo_valor.equals("char")){
+                error("error de tipos");
+            }else if(tipo_ident.equals("int") && tipo_valor.equals("char")){
                 error("error de tipos");
             }else if(tipo_ident.equals("float") && tipo_valor.equals("int")){
                 aux = newVar();
@@ -160,17 +167,20 @@ public class Compilador {
         String aux;
         String tipo_array = getTypeDefinitivo(ident);
         String tipo_valor;
+        String valor;
         if(tam_array < num_valores){
             error("las dimensiones de los arrays no encajan");
         }else{
             aux = newVar();
             declarar(aux, tipo_array);
             for(int i=0; i<num_valores; i++){
-                tipo_valor = getTypeDefinitivo(valores.get(i));
+                valor = valores.get(i);
+                tipo_valor = getTypeDefinitivo(valor);
+                if(tipo_valor.equals("char") && !isVar(valor)) valor = creaChar(valor);
                 if(!tipo_valor.equals(tipo_array)){
                     error("error de tipos");
                 }else{
-                    PLXC.out.println("   " + aux + " = " + valores.get(i) + ";");
+                    PLXC.out.println("   " + aux + " = " + valor + ";");
                     PLXC.out.println("   " + ident + "[" + i + "] = " + aux + ";");
                 }
             }    
@@ -203,6 +213,10 @@ public class Compilador {
                 break;
             case "float":
                 declarar(aux, "float");
+                PLXC.out.println("   " + aux + " = " + ident + "[" + e + "];");
+                break;
+            case "char":
+                declarar(aux, "char");
                 PLXC.out.println("   " + aux + " = " + ident + "[" + e + "];");
                 break;
             
@@ -303,6 +317,10 @@ public class Compilador {
                 break;
             case "float":
                 variables.put(ident, new Tupla("float", "0", tam));
+                PLXC.out.println("   " + ident + "_length = " + tam + ";");
+                break;
+            case "char":
+                variables.put(ident, new Tupla("char", "0", tam));
                 PLXC.out.println("   " + ident + "_length = " + tam + ";");
                 break;
 
