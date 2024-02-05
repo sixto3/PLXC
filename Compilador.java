@@ -93,7 +93,7 @@ public class Compilador {
             }
         }else{
             if(cast.equals("(int)")){
-                if(!tipo_ident.equals("int")) error("error de tipos");
+                if(!tipo_ident.equals("int") && !tipo_ident.equals("char")) error("error de tipos");
                 if(tipo_valor.equals("float")){ //(int) float
                     asigInt(ident, valor);
                 }else /*if(tipo_valor.equals("char"))*/{
