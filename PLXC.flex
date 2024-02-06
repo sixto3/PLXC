@@ -29,6 +29,7 @@ import java_cup.runtime.*;
 "int"   { return new Symbol(sym.INT); }
 "float"   { return new Symbol(sym.FLOAT); }
 "char"   { return new Symbol(sym.CHAR); }
+"string"   { return new Symbol(sym.STRING); }
 "(int)" { return new Symbol(sym.CINT); }
 "(float)" { return new Symbol(sym.CFLOAT); }
 "(char)" { return new Symbol(sym.CCHAR); }
@@ -48,6 +49,7 @@ import java_cup.runtime.*;
 [a-zA-Z_][a-zA-Z0-9_]*                      { return new Symbol(sym.IDENT, yytext()); }
 [0-9]+\.[0-9]+([eE][\+\-]?[0-9]+)?          { return new Symbol(sym.REAL, yytext()); }
 '(\\([\"'\\bfnrt]|u[0-9A-Fa-f]{4})|[^\\'])' { return new Symbol(sym.CHARTEXT, yytext());   }
+\"([a-zA-Z]|[\\\"]*|u[0-9A-Fa-f]{4})+\"     { return new Symbol(sym.STRINGTEXT, yytext());   }
 
 (\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\/)|(\/\/.*) {}
 [\s] {}

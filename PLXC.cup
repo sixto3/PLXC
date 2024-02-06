@@ -12,13 +12,13 @@ terminal PYC, AP, CP, IF, ELSE, WHILE, DO, FOR, ALL, CLL, PRINT, COMA, AC, CC;
 terminal MAS, MENOS, POR, DIV, MENOSUNARIO, ASIG;
 terminal IGUAL, DISTINTO, MAYOR, MENOR, MENOROIGUAL, MAYOROIGUAL;
 terminal AND, OR, NEG;
-terminal INT, FLOAT, CHAR;
+terminal INT, FLOAT, CHAR, STRING;
 terminal CINT, CFLOAT, CCHAR;
 terminal PUNTO, LENGTH;
-terminal String IDENT, ENTERO, REAL, CHARTEXT;
+terminal String IDENT, ENTERO, REAL, CHARTEXT, STRINGTEXT;
 
 
-non terminal starter, lista_sent, sent, else, declaracion, lista_variables_int, item_int, lista_variables_float, item_float, lista_variables_char, item_char, arrayLlaves;
+non terminal starter, lista_sent, sent, else, declaracion, lista_variables_int, item_int, lista_variables_float, item_float, lista_variables_char, item_char, arrayLlaves, lista_variables_string, item_string;
 non terminal String exp, asignacion, while, if, do, for;
 
 precedence right ASIG;
@@ -55,7 +55,7 @@ sent    ::= exp PYC
                             exp:e3 {: Compilador.goTo(Compilador.getEtTrue(tupla)); Compilador.pintarEtiqueta(Compilador.getEtTrue(e2)); :} CP 
                             sent {: Compilador.goTo(Compilador.getEtFalse(tupla)); Compilador.pintarEtiqueta(Compilador.getEtFalse(e2)); :}
         |   ALL lista_sent CLL
-        |   PRINT AP exp:e CP PYC {: if(!Compilador.isArray(e)) Compilador.print(e); else Compilador.printArray(e); cast = ""; :}
+        |   PRINT AP exp:e CP PYC {: Compilador.printSupremo(e); cast = ""; :}
         |   PRINT AP ALL {: array = new ArrayList<>(); :} arrayLlaves CLL CP PYC {: Compilador.printArrayLlaves(array); array.clear(); :}
         |   declaracion {: declaracion = false; :} PYC
         ;
@@ -75,6 +75,7 @@ exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :
     |   ENTERO:e {: RESULT = e; :}
     |   REAL:e  {: RESULT = e; :}
     |   CHARTEXT:e {: RESULT = e; :}
+    |   STRINGTEXT:e {: RESULT = e; :}
     |   exp:e1 IGUAL exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "igual"); :}
     |   exp:e1 DISTINTO exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "distinto"); :}
     |   exp:e1 MENOR exp:e2 {: RESULT = Compilador.pintarIf(e1, e2, "menor"); :}
@@ -97,6 +98,7 @@ exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :
 declaracion ::= INT {: declaracion = true; :} lista_variables_int
             |   FLOAT {: declaracion = true; :} lista_variables_float
             |   CHAR {: declaracion = true; :} lista_variables_char
+            |   STRING {: declaracion = true; :} lista_variables_string
             ;
 
 lista_variables_int ::= item_int COMA lista_variables_int
@@ -109,6 +111,10 @@ lista_variables_float   ::= item_float COMA lista_variables_float
 
 lista_variables_char   ::= item_char COMA lista_variables_char
                     |   item_char
+                    ;
+
+lista_variables_string   ::= item_string COMA lista_variables_string
+                    |   item_string
                     ;
 
 item_int    ::= IDENT:i {: Compilador.declarar(i, "int"); :}
@@ -133,6 +139,10 @@ item_char    ::= IDENT:i {: Compilador.declarar(i, "char"); :}
             |   IDENT:i AC ENTERO:tam CC ASIG exp:e {: Compilador.declararArray(i, "char", tam); Compilador.asigArray(i, tam, e); :}
             |   IDENT:i AC ENTERO:tam CC ASIG ALL {: array = new ArrayList<>(); :} arrayLlaves CLL {: Compilador.declararArray(i, "char", tam); 
                                                                                                     Compilador.inicializarArray(i, array); array.clear(); :}
+            ;
+
+item_string ::= IDENT:i {: Compilador.declarar(i, "string"); :}
+            |   IDENT:i ASIG exp:e {: Compilador.declarar(i, "string"); Compilador.asigString(i, e); :}
             ;
 
 asignacion  ::= IDENT:i ASIG exp:e {: RESULT = e; Compilador.asigAlternativo(i, RESULT, cast); cast = ""; :}

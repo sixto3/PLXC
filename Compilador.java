@@ -86,6 +86,8 @@ public class Compilador {
             }else{
                 if(!variables.get(ident).getTam().equals("0") && !variables.get(valor).getTam().equals("0")){
                     asigDosArrays(ident, valor);
+                }else if(tipo_ident.equals("string") && tipo_valor.equals("string")){
+                    asigString(ident, valor);
                 }else{
                     variables.put(ident, new Tupla(tipo_valor, valor, "0"));
                     PLXC.out.println("   " + ident + " = " + valor + ";");
@@ -185,6 +187,43 @@ public class Compilador {
                 }
             }    
         }
+    }
+
+    public static void asigString(String ident, String valor){
+        String tipo_ident = getTypeDefinitivo(ident);
+        //PLXC.out.println("#tipo ident: " + tipo_ident);
+        String tipo_valor = getTypeDefinitivo(valor);
+        //PLXC.out.println("#tipo valor: " + tipo_valor);
+        int tam;
+        int tam_real = 0;
+        String aux = newVar();
+        String elemento;
+        String valor_a_asignar;
+        if(!tipo_ident.equals(tipo_valor)){
+            error("error de tipos");
+        }else{
+            if(!isVar(valor)){
+                valor = valor.substring(1, valor.length()-1);
+                tam = valor.length();
+                for(int i=0; i<tam; i++){
+                    if(valor.charAt(i) == '\\'){
+                        elemento = "\'" + valor.charAt(i+1) + "\'";
+                        i=i+1;
+                    }else{
+                        elemento = "\'" + valor.charAt(i) + "\'";
+                    }
+                    
+                    valor_a_asignar = creaChar(elemento);
+                    PLXC.out.println("   " + ident + "[" + tam_real + "] = " + valor_a_asignar + ";");
+                    tam_real++;
+                }
+                variables.get(ident).setTam(String.valueOf(tam_real));
+            }else{                
+                PLXC.out.println("   " + ident + " = " + valor + ";");
+                variables.get(ident).setTam(variables.get(valor).getTam());
+            }
+        }
+        
     }
 
     public static void comprobacionDeRango(String ident, String pos){
@@ -297,8 +336,8 @@ public class Compilador {
             case "char":
                 variables.put(ident, new Tupla("char", "0", "0"));
                 break;
-            case "String":
-                variables.put(ident, new Tupla("String", "", "0"));
+            case "string":
+                variables.put(ident, new Tupla("string", "", "0"));
                 break;
 
             default:
@@ -334,6 +373,19 @@ public class Compilador {
         PLXC.out.println("   #" + mensaje);
         PLXC.out.println("   error;");
         PLXC.out.println("   halt;");
+    }
+
+    public static void printSupremo(String e){
+        if(isArray(e)){
+            //PLXC.out.println("#printarray");
+            printArray(e);
+        }else if(isString(e)){
+            //PLXC.out.println("#printstring");
+            printStringSupremo(e);
+        }else{
+            //PLXC.out.println("#printnormal");
+            print(e);
+        }
     }
 
     public static void print(String e){
@@ -376,6 +428,57 @@ public class Compilador {
             PLXC.out.println("   " + aux + " = " + valor + ";");
             print(aux);
         }
+    }
+
+    public static void printStringSupremo(String e){
+        if(!isVar(e)) printString(e);
+        else{
+            printStringVariable(e);
+        }
+    }
+
+    public static void printString(String k) {
+		String aux = k.substring(1, k.length() -1 );
+		int x = 0;
+		do {
+			int ascii = 0;
+			if ((aux.charAt(x) == '\\') && (aux.charAt(x + 1) == '\\')) {
+				ascii = 92;
+				x++;
+			} else if ((aux.charAt(x) == '\\') && (aux.charAt(x + 1) == '\"')) {
+				ascii = 34;
+				x++;
+			} else if ((aux.charAt(x) == '\\') && (aux.charAt(x + 1) == 'b')) {
+				ascii = 8;
+				x++;
+			} else if ((aux.charAt(x) == '\\') && (aux.charAt(x + 1) == 'n')) {
+				ascii = 10;
+				x++;
+			} else if ((aux.charAt(x) == '\\') && (aux.charAt(x + 1) == 'r')) {
+				ascii = 13;
+				x++;
+			} else if (aux.substring(x).contains("\\u")) {
+				ascii = Integer.parseInt(aux.substring(x, aux.length()),
+						16);
+			} else {
+				ascii = (int) aux.charAt(x);
+			}
+			PLXC.out.println("writec " + ascii + ";");
+			x++;
+		} while (x < aux.length());
+		PLXC.out.println("writec 10;");
+	}
+
+    public static void printStringVariable(String e){
+        //PLXC.out.println("#printStringVariable");
+        int tam = Integer.parseInt(variables.get(e).getTam());
+        String aux = newVar();
+        declarar(aux, "string");
+        for(int i=0; i<tam; i++){
+            PLXC.out.println("   " + aux + " = " + e + "[" + i + "];");
+            PLXC.out.println("   writec " + aux + ";"); 
+        }
+        PLXC.out.println("   writec 10;"); 
     }
 
     public static String newVar(){
@@ -578,6 +681,8 @@ public class Compilador {
                 result = "float";
             }else if (e.matches("'(\\\\([\\\"'\\\\bfnrt]|u[0-9A-Fa-f]{4})|[^\\\\'])'")){
                 result = "char";
+            }else if(e.matches("\".*\"")){
+                result = "string";
             }
         }
         return result;
@@ -615,9 +720,14 @@ public class Compilador {
 	}
 
     public static boolean isArray(String x){
-
-        if(isVar(x)) return Integer.parseInt(variables.get(x).getTam())>0;
+        if(isVar(x)) return Integer.parseInt(variables.get(x).getTam())>0 && !getTypeDefinitivo(x).equals("string");
         return false;
+    }
+
+    public static boolean isString(String e){
+        if(isVar(e)) return getTypeDefinitivo(e).equals("string");
+        return e.matches("\".*\"");
+
     }
 
 }
