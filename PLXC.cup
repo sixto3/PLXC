@@ -18,10 +18,10 @@ terminal PUNTO, LENGTH;
 terminal String IDENT, ENTERO, REAL, CHARTEXT, STRINGTEXT, TRUE, FALSE;
 
 
-non terminal starter, lista_sent, sent, else, declaracion, arrayLlaves;
+non terminal starter, lista_sent, else, declaracion, arrayLlaves;
 non terminal lista_variables_int, item_int, lista_variables_float, item_float, lista_variables_char, item_char;
 non terminal lista_variables_string, item_string, lista_variables_boolean, item_boolean;
-non terminal String exp, asignacion, while, if, do, for, valor_booleano;
+non terminal String exp, asignacion, while, if, do, for, valor_booleano, sent;
 
 precedence right ASIG;
 precedence left OR;
@@ -47,8 +47,8 @@ lista_sent  ::= lista_sent sent
             ;
 
 sent    ::= exp PYC
-        |   if:etiq AP exp:e CP {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e)); :}
-                        sent {: Compilador.goTo(etiq); Compilador.pintarEtiqueta(Compilador.getEtFalse(e)); :}
+        |   if:etiq AP exp:e CP {: if(Compilador.isVar(e)) RESULT = Compilador.pintarIf("1", e, "igual"); else RESULT = e; Compilador.pintarEtiqueta(Compilador.getEtTrue(RESULT)); :}
+                        sent {: Compilador.goTo(etiq); Compilador.pintarEtiqueta(Compilador.getEtFalse(RESULT)); :}
                         else {: Compilador.pintarEtiqueta(etiq); :}
         |   while:etiq {: Compilador.pintarEtiqueta(etiq); :} AP exp:e CP {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e)); :} 
                                                                     sent {: Compilador.goTo(etiq); Compilador.pintarEtiqueta(Compilador.getEtFalse(e)); :}
