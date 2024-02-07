@@ -30,6 +30,7 @@ import java_cup.runtime.*;
 "float"   { return new Symbol(sym.FLOAT); }
 "char"   { return new Symbol(sym.CHAR); }
 "string"   { return new Symbol(sym.STRING); }
+"boolean"   { return new Symbol(sym.BOOLEAN); }
 "(int)" { return new Symbol(sym.CINT); }
 "(float)" { return new Symbol(sym.CFLOAT); }
 "(char)" { return new Symbol(sym.CCHAR); }
@@ -44,6 +45,8 @@ import java_cup.runtime.*;
 "!"    { return new Symbol(sym.NEG); }
 "." { return new Symbol(sym.PUNTO); }
 "length" { return new Symbol(sym.LENGTH); }
+"true"   { return new Symbol(sym.TRUE); }
+"false"   { return new Symbol(sym.FALSE); }
 
 0|[1-9][0-9]*                               { return new Symbol(sym.ENTERO, yytext());  }
 [a-zA-Z_][a-zA-Z0-9_]*                      { return new Symbol(sym.IDENT, yytext()); }

@@ -55,7 +55,10 @@ public class Compilador {
     public static void asigAlternativo(String ident, String valor, String cast){
         checkDeclaracion("asignacion", ident);
         String tipo_ident = getTypeDefinitivo(ident);
+        //PLXC.out.println("#tipo_ident: " + tipo_ident);
         String tipo_valor = getTypeDefinitivo(valor);
+        //PLXC.out.println("#tipo_valor: " + tipo_valor);
+        //PLXC.out.println("valor: " + valor);
         //boolean valor_isVar = isVar(valor);
         String aux;
         //if(valor_isVar) tipo_valor = variables.get(valor).getTipo();
@@ -75,6 +78,9 @@ public class Compilador {
                     error("error de tipos");
                 }else if(!variables.get(ident).getTam().equals("0") && !variables.get(valor).getTam().equals("0")){
                     error("error de tipos");
+                }else if(tipo_ident.equals("boolean")){
+                    //PLXC.out.println("ASCONACOIAN");
+                    error("error de tipos");
                 }else{
                     if(tipo_ident.equals("float") && tipo_valor.equals("int")){ //float = int
                         asigFloat(ident, valor);
@@ -83,11 +89,13 @@ public class Compilador {
                         PLXC.out.println("   " + ident + " = " + valor + ";");
                     }
                 }
-            }else{
+            }else{ //si los tipos son iguales
                 if(!variables.get(ident).getTam().equals("0") && !variables.get(valor).getTam().equals("0")){
                     asigDosArrays(ident, valor);
                 }else if(tipo_ident.equals("string") && tipo_valor.equals("string")){
                     asigString(ident, valor);
+                }else if(tipo_ident.equals("boolean")){
+                    asigBoolean(ident, valor);
                 }else{
                     variables.put(ident, new Tupla(tipo_valor, valor, "0"));
                     PLXC.out.println("   " + ident + " = " + valor + ";");
@@ -114,6 +122,47 @@ public class Compilador {
                     PLXC.out.println("   " + ident + " = " + valor + ";");
                 }
             }
+        }
+    }
+
+    public static void asigBoolean(String ident, String valor){
+        //PLXC.out.println("   #asigBoolean");
+        String etTrue, etFalse, etFinal;
+        if(valor.matches("true")){
+            etTrue = newEtiq(); etFalse = newEtiq(); etFinal = newEtiq();
+            goTo(etTrue);
+            pintarEtiqueta(etTrue);
+            PLXC.out.println("   " + ident + " = 1;");
+            goTo(etFinal);
+            pintarEtiqueta(etFalse);
+            PLXC.out.println("   " + ident + " = 0;");
+            pintarEtiqueta(etFinal);
+        }else if(valor.matches("false")){
+            etTrue = newEtiq(); etFalse = newEtiq(); etFinal = newEtiq();
+            goTo(etFalse);
+            pintarEtiqueta(etTrue);
+            PLXC.out.println("   " + ident + " = 1;");
+            goTo(etFinal);
+            pintarEtiqueta(etFalse);
+            PLXC.out.println("   " + ident + " = 0;");
+            pintarEtiqueta(etFinal);
+        }else if(isVar(valor)){
+            String etiquetas = pintarIf("1", valor, "igual");
+            etTrue = getEtTrue(etiquetas); etFalse = getEtFalse(etiquetas); etFinal = newEtiq();
+            pintarEtiqueta(etTrue);
+            PLXC.out.println("   " + ident + " = 1;");
+            goTo(etFinal);
+            pintarEtiqueta(etFalse);
+            PLXC.out.println("   " + ident + " = 0;");
+            pintarEtiqueta(etFinal);
+        }else{
+            etTrue = getEtTrue(valor); etFalse = getEtFalse(valor); etFinal = newEtiq();
+            pintarEtiqueta(etTrue);
+            PLXC.out.println("   " + ident + " = 1;");
+            goTo(etFinal);
+            pintarEtiqueta(etFalse);
+            PLXC.out.println("   " + ident + " = 0;");
+            pintarEtiqueta(etFinal);
         }
     }
 
@@ -338,6 +387,9 @@ public class Compilador {
                 break;
             case "string":
                 variables.put(ident, new Tupla("string", "", "0"));
+                break;
+            case "boolean":
+                variables.put(ident, new Tupla("boolean", "0", "0"));
                 break;
 
             default:
@@ -683,6 +735,8 @@ public class Compilador {
                 result = "char";
             }else if(e.matches("\".*\"")){
                 result = "string";
+            }else if(e.matches("(L(\\d)+)+") || e.matches("true") || e.matches("false")){
+                result = "boolean";
             }
         }
         return result;
