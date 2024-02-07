@@ -11,7 +11,7 @@ action code {:
 terminal PYC, AP, CP, IF, ELSE, WHILE, DO, FOR, ALL, CLL, PRINT, COMA, AC, CC;
 terminal MAS, MENOS, POR, DIV, MENOSUNARIO, ASIG;
 terminal IGUAL, DISTINTO, MAYOR, MENOR, MENOROIGUAL, MAYOROIGUAL;
-terminal AND, OR, NEG;
+terminal AND, OR, NEG, IMPLICA;
 terminal INT, FLOAT, CHAR, STRING, BOOLEAN;
 terminal CINT, CFLOAT, CCHAR;
 terminal PUNTO, LENGTH;
@@ -24,6 +24,7 @@ non terminal lista_variables_string, item_string, lista_variables_boolean, item_
 non terminal String exp, asignacion, while, if, do, for, valor_booleano, sent;
 
 precedence right ASIG;
+precedence right IMPLICA;
 precedence left OR;
 precedence left AND;
 precedence right NEG;
@@ -99,6 +100,7 @@ exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :
     |   IDENT:i AC exp:e CC {: RESULT = Compilador.posicionArray(i, e); :}
     |   IDENT:i PUNTO LENGTH {: RESULT = i + "_length"; :}
     |   valor_booleano:v {: RESULT = v; :}
+    |   exp:e1 IMPLICA {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e1)); :} exp:e2 {: RESULT = e2; Compilador.pintarEtiqueta(Compilador.getEtFalse(e1)); Compilador.goTo(Compilador.getEtTrue(e2)); :}
     |   {::}
     ;
 

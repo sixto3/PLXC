@@ -47,6 +47,8 @@ import java_cup.runtime.*;
 "length" { return new Symbol(sym.LENGTH); }
 "true"   { return new Symbol(sym.TRUE); }
 "false"   { return new Symbol(sym.FALSE); }
+"-->"   { return new Symbol(sym.IMPLICA); }
+
 
 0|[1-9][0-9]*                               { return new Symbol(sym.ENTERO, yytext());  }
 [a-zA-Z_][a-zA-Z0-9_]*                      { return new Symbol(sym.IDENT, yytext()); }
