@@ -434,10 +434,34 @@ public class Compilador {
         }else if(isString(e)){
             //PLXC.out.println("#printstring");
             printStringSupremo(e);
+        }else if(getTypeDefinitivo(e).equals("boolean")){
+            PLXC.out.println("   #printboolean");
+            printBoolean(e);
         }else{
             //PLXC.out.println("#printnormal");
             print(e);
         }
+    }
+
+    public static void printBoolean(String e){
+        String etTrue = getEtTrue(e);
+        String etFalse = getEtFalse(e);
+        String etFinal = newEtiq();
+        pintarEtiqueta(etTrue);
+        PLXC.out.println("   writec 116;");
+        PLXC.out.println("   writec 114;");
+        PLXC.out.println("   writec 117;");
+        PLXC.out.println("   writec 101;");
+        PLXC.out.println("   writec 10;");
+        goTo(etFinal);
+        pintarEtiqueta(etFalse);
+        PLXC.out.println("   writec 102;");
+        PLXC.out.println("   writec 97;");
+        PLXC.out.println("   writec 108;");
+        PLXC.out.println("   writec 115;");
+        PLXC.out.println("   writec 101;");
+        PLXC.out.println("   writec 10;");
+        pintarEtiqueta(etFinal);
     }
 
     public static void print(String e){
