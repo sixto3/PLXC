@@ -15,13 +15,13 @@ terminal AND, OR, NEG, IMPLICA;
 terminal INT, FLOAT, CHAR, STRING, BOOLEAN;
 terminal CINT, CFLOAT, CCHAR;
 terminal PUNTO, LENGTH;
-terminal String IDENT, ENTERO, REAL, CHARTEXT, STRINGTEXT, TRUE, FALSE, FORALL;
+terminal String IDENT, ENTERO, REAL, CHARTEXT, STRINGTEXT, TRUE, FALSE, FORALL, FROM, TO, STEP;
 
 
 non terminal starter, lista_sent, else, declaracion, arrayLlaves;
 non terminal lista_variables_int, item_int, lista_variables_float, item_float, lista_variables_char, item_char;
 non terminal lista_variables_string, item_string, lista_variables_boolean, item_boolean;
-non terminal String exp, asignacion, while, if, do, for, valor_booleano, sent, forall;
+non terminal String exp, asignacion, while, if, do, for, valor_booleano, sent, forall, step;
 
 precedence right ASIG;
 precedence right IMPLICA;
@@ -104,6 +104,14 @@ exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :
     |   forall:tupla IDENT:i {: PLXC.out.println("   " + i + " = 0;"); Compilador.pintarEtiqueta(Compilador.getEtTrue(tupla)); :} 
                         COMA exp:e {: RESULT = Compilador.getEtFalse(tupla) + Compilador.getEtFalse(e); 
                                       Compilador.pintarEtiqueta(Compilador.getEtTrue(e)); Compilador.pintarIfForall(tupla, i); :}
+
+    |   forall:tupla IDENT:i FROM ENTERO:ini {: PLXC.out.println("   " + i + " = " + ini + ";"); Compilador.pintarEtiqueta(Compilador.getEtTrue(tupla)); :} 
+                                        TO ENTERO:fin {: Compilador.pintarIfForallInt(i, fin, tupla); :} step:step 
+                                        COMA exp:e {: RESULT = Compilador.getEtFalse(tupla) + Compilador.getEtFalse(e);
+                                                      Compilador.pintarEtiqueta(Compilador.getEtTrue(e)); 
+                                                      PLXC.out.println("   " + i + " = " + i + " + " + step + ";");
+                                                      Compilador.goTo(Compilador.getEtTrue(tupla)); :}
+
     |   {::}
     ;
 
@@ -195,3 +203,7 @@ arrayLlaves ::= arrayLlaves:a COMA exp:e {: array.add(e); :}
 valor_booleano  ::= TRUE {: RESULT = "true"; :}
                 |   FALSE {: RESULT = "false"; :}
                 ;
+
+step    ::= STEP ENTERO:e {: RESULT = e; :}
+        |   {: RESULT = "1"; :}
+        ;

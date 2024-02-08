@@ -49,6 +49,9 @@ import java_cup.runtime.*;
 "false"   { return new Symbol(sym.FALSE); }
 "-->"   { return new Symbol(sym.IMPLICA); }
 "forall" { return new Symbol(sym.FORALL); }
+"from" { return new Symbol(sym.FROM); }
+"to" { return new Symbol(sym.TO); }
+"step" { return new Symbol(sym.STEP); }
 
 
 0|[1-9][0-9]*                               { return new Symbol(sym.ENTERO, yytext());  }

@@ -689,10 +689,15 @@ public class Compilador {
     }
 
     public static void pintarIfForall(String tupla, String i){
-        PLXC.out.print("   if(1 == " + i + ")");
+        PLXC.out.print("   if (1 == " + i + ")");
         goTo(getEtFalse(tupla));
         PLXC.out.println("   " + i + " = 1;");
         goTo(getEtTrue(tupla));
+    }
+
+    public static void pintarIfForallInt(String i, String fin, String tupla){
+        PLXC.out.print("   if (" + fin + " < " + i + ")");
+        goTo(getEtFalse(tupla));
     }
 
     public static String getEtTrue(String tupla){
