@@ -631,6 +631,38 @@ public class Compilador {
         }
     }
 
+    public static String postIncrementa(String ident){
+        checkDeclaracion("asignacion", ident);
+        String aux = newVar();
+        String tipo_ident = getTypeDefinitivo(ident);
+        declarar(aux, tipo_ident);
+        PLXC.out.println("   " + aux + " = " + ident + ";");
+        PLXC.out.println("   " + ident + " = " + ident + " + 1;");
+        return aux;
+    }
+
+    public static String preIncrementa(String ident){
+        checkDeclaracion("asignacion", ident);
+        PLXC.out.println("   " + ident + " = " + ident + " + 1;");
+        return ident;
+    }
+
+    public static String postDecrementa(String ident){
+        checkDeclaracion("asignacion", ident);
+        String aux = newVar();
+        String tipo_ident = getTypeDefinitivo(ident);
+        declarar(aux, tipo_ident);
+        PLXC.out.println("   " + aux + " = " + ident + ";");
+        PLXC.out.println("   " + ident + " = " + ident + " - 1;");
+        return aux;
+    }
+
+    public static String preDecrementa(String ident){
+        checkDeclaracion("asignacion", ident);
+        PLXC.out.println("   " + ident + " = " + ident + " - 1;");
+        return ident;
+    }
+
     public static String menosUnario(String e){
         String aux = newVar();
         PLXC.out.println("   " + aux + " = -" + e + ";");

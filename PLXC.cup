@@ -9,7 +9,7 @@ action code {:
 
 
 terminal PYC, AP, CP, IF, ELSE, WHILE, DO, FOR, ALL, CLL, PRINT, COMA, AC, CC;
-terminal MAS, MENOS, POR, DIV, MENOSUNARIO, ASIG;
+terminal MAS, MENOS, POR, DIV, MENOSUNARIO, ASIG, INCR, DECR;
 terminal IGUAL, DISTINTO, MAYOR, MENOR, MENOROIGUAL, MAYOROIGUAL;
 terminal AND, OR, NEG, IMPLICA;
 terminal INT, FLOAT, CHAR, STRING, BOOLEAN;
@@ -31,6 +31,7 @@ precedence right NEG;
 precedence left IGUAL, DISTINTO, MAYOR, MENOR, MENOROIGUAL, MAYOROIGUAL;
 precedence left MAS, MENOS;
 precedence left POR, DIV;
+precedence right INCR, DECR;
 precedence right CINT, CFLOAT, CCHAR;
 precedence right MENOSUNARIO;
 precedence nonassoc IF;
@@ -112,6 +113,10 @@ exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :
                                                       PLXC.out.println("   " + i + " = " + i + " + " + step + ";");
                                                       Compilador.goTo(Compilador.getEtTrue(tupla)); :}
 
+    |   IDENT:i INCR {: RESULT = Compilador.postIncrementa(i); :}
+    |   INCR IDENT:i {: RESULT = Compilador.preIncrementa(i); :}
+    |   IDENT:i DECR {: RESULT = Compilador.postDecrementa(i); :}
+    |   DECR IDENT:i {: RESULT = Compilador.preDecrementa(i); :}
     |   {::}
     ;
 

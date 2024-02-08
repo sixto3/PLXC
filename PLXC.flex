@@ -52,6 +52,8 @@ import java_cup.runtime.*;
 "from" { return new Symbol(sym.FROM); }
 "to" { return new Symbol(sym.TO); }
 "step" { return new Symbol(sym.STEP); }
+"++" { return new Symbol(sym.INCR); }
+"--" { return new Symbol(sym.DECR); }
 
 
 0|[1-9][0-9]*                               { return new Symbol(sym.ENTERO, yytext());  }
