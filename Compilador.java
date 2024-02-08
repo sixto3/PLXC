@@ -688,6 +688,13 @@ public class Compilador {
         return tupla.getEtTrue() + tupla.getEtFalse();
     }
 
+    public static void pintarIfForall(String tupla, String i){
+        PLXC.out.print("   if(1 == " + i + ")");
+        goTo(getEtFalse(tupla));
+        PLXC.out.println("   " + i + " = 1;");
+        goTo(getEtTrue(tupla));
+    }
+
     public static String getEtTrue(String tupla){
         return "L" + tupla.split("L")[1];
     }
