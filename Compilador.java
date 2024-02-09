@@ -53,6 +53,7 @@ public class Compilador {
     }
 
     public static void asigAlternativo(String ident, String valor, String cast){
+        //PLXC.out.println("  #cast: " + cast);
         checkDeclaracion("asignacion", ident);
         String tipo_ident = getTypeDefinitivo(ident);
         //PLXC.out.println("#tipo_ident: " + tipo_ident);
@@ -95,7 +96,7 @@ public class Compilador {
                 }else if(tipo_ident.equals("string") && tipo_valor.equals("string")){
                     asigString(ident, valor);
                 }else if(tipo_ident.equals("boolean")){
-                    asigBoolean(ident, valor);
+                    asigBoolean(ident, valor, cast);
                 }else{
                     variables.put(ident, new Tupla(tipo_valor, valor, "0"));
                     PLXC.out.println("   " + ident + " = " + valor + ";");
@@ -106,6 +107,8 @@ public class Compilador {
                 if(!tipo_ident.equals("int") && !tipo_ident.equals("char")) error("error de tipos");
                 if(tipo_valor.equals("float")){ //(int) float
                     asigInt(ident, valor);
+                }else if(tipo_ident.equals("int") && tipo_valor.equals("boolean")){
+                     asigBoolean(ident, valor, cast);
                 }else /*if(tipo_valor.equals("char"))*/{
                     PLXC.out.println("   " + ident + " = " + valor + ";");
                 }
@@ -125,45 +128,95 @@ public class Compilador {
         }
     }
 
-    public static void asigBoolean(String ident, String valor){
+    public static void asigBoolean(String ident, String valor, String cast){
         //PLXC.out.println("   #asigBoolean");
+        //PLXC.out.println("   #cast: " + cast);
+        //PLXC.out.println("   #valor: " + valor);
         String etTrue, etFalse, etFinal;
-        if(valor.matches("true")){
-            etTrue = newEtiq(); etFalse = newEtiq(); etFinal = newEtiq();
-            goTo(etTrue);
-            pintarEtiqueta(etTrue);
-            PLXC.out.println("   " + ident + " = 1;");
-            goTo(etFinal);
-            pintarEtiqueta(etFalse);
-            PLXC.out.println("   " + ident + " = 0;");
-            pintarEtiqueta(etFinal);
-        }else if(valor.matches("false")){
-            etTrue = newEtiq(); etFalse = newEtiq(); etFinal = newEtiq();
-            goTo(etFalse);
-            pintarEtiqueta(etTrue);
-            PLXC.out.println("   " + ident + " = 1;");
-            goTo(etFinal);
-            pintarEtiqueta(etFalse);
-            PLXC.out.println("   " + ident + " = 0;");
-            pintarEtiqueta(etFinal);
-        }else if(isVar(valor)){
-            String etiquetas = pintarIf("1", valor, "igual");
-            etTrue = getEtTrue(etiquetas); etFalse = getEtFalse(etiquetas); etFinal = newEtiq();
-            pintarEtiqueta(etTrue);
-            PLXC.out.println("   " + ident + " = 1;");
-            goTo(etFinal);
-            pintarEtiqueta(etFalse);
-            PLXC.out.println("   " + ident + " = 0;");
-            pintarEtiqueta(etFinal);
-        }else{
-            etTrue = getEtTrue(valor); etFalse = getEtFalse(valor); etFinal = newEtiq();
-            pintarEtiqueta(etTrue);
-            PLXC.out.println("   " + ident + " = 1;");
-            goTo(etFinal);
-            pintarEtiqueta(etFalse);
-            PLXC.out.println("   " + ident + " = 0;");
-            pintarEtiqueta(etFinal);
+        String aux;
+
+        if(cast.isEmpty()){
+            if(valor.matches("true")){
+                etTrue = newEtiq(); etFalse = newEtiq(); etFinal = newEtiq();
+                goTo(etTrue);
+                pintarEtiqueta(etTrue);
+                PLXC.out.println("   " + ident + " = 1;");
+                goTo(etFinal);
+                pintarEtiqueta(etFalse);
+                PLXC.out.println("   " + ident + " = 0;");
+                pintarEtiqueta(etFinal);
+            }else if(valor.matches("false")){
+                etTrue = newEtiq(); etFalse = newEtiq(); etFinal = newEtiq();
+                goTo(etFalse);
+                pintarEtiqueta(etTrue);
+                PLXC.out.println("   " + ident + " = 1;");
+                goTo(etFinal);
+                pintarEtiqueta(etFalse);
+                PLXC.out.println("   " + ident + " = 0;");
+                pintarEtiqueta(etFinal);
+            }else if(isVar(valor)){
+                //PLXC.out.println("   #isVar");
+                String etiquetas = pintarIf("1", valor, "igual");
+                etTrue = getEtTrue(etiquetas); etFalse = getEtFalse(etiquetas); etFinal = newEtiq();
+                pintarEtiqueta(etTrue);
+                PLXC.out.println("   " + ident + " = 1;");
+                goTo(etFinal);
+                pintarEtiqueta(etFalse);
+                PLXC.out.println("   " + ident + " = 0;");
+                pintarEtiqueta(etFinal);
+            }else{
+                etTrue = getEtTrue(valor); etFalse = getEtFalse(valor); etFinal = newEtiq();
+                pintarEtiqueta(etTrue);
+                PLXC.out.println("   " + ident + " = 1;");
+                goTo(etFinal);
+                pintarEtiqueta(etFalse);
+                PLXC.out.println("   " + ident + " = 0;");
+                pintarEtiqueta(etFinal);
+            }
+        }else{ //hay cast
+            if(cast.equals("(int)")){
+                if(valor.matches("true")){
+                    etTrue = newEtiq(); etFalse = newEtiq(); etFinal = newEtiq();
+                    goTo(etTrue);
+                    pintarEtiqueta(etTrue);
+                    aux = newVar();
+                    declarar(aux, "int");
+                    PLXC.out.println("   " + aux + " = 1;");
+                    pintarEtiqueta(etFalse);
+                    PLXC.out.println("   " + ident + " = " + aux + ";");
+                }else if(valor.matches("false")){
+                    etTrue = newEtiq(); etFalse = newEtiq(); etFinal = newEtiq();
+                    goTo(etFalse);
+                    pintarEtiqueta(etTrue);
+                    aux = newVar();
+                    declarar(aux, "int");
+                    PLXC.out.println("   " + aux + " = 1;");
+                    pintarEtiqueta(etFalse);
+                    PLXC.out.println("   " + ident + " = " + aux + ";");
+                }else if(isVar(valor)){
+                   // PLXC.out.println("   #esVar");
+                    String etiquetas = pintarIf("1", valor, "igual");
+                    etTrue = getEtTrue(etiquetas); etFalse = getEtFalse(etiquetas); etFinal = newEtiq();
+                    pintarEtiqueta(etTrue);
+                    aux = newVar();
+                    declarar(aux, "int");
+                    PLXC.out.println("   " + aux + " = 1;");
+                    pintarEtiqueta(etFalse);
+                    PLXC.out.println("   " + ident + " = aux;");
+                }else{
+                    //PLXC.out.println("   #por aquiiiiiii");
+                    etTrue = getEtTrue(valor); etFalse = getEtFalse(valor); etFinal = newEtiq();
+                    pintarEtiqueta(etTrue);
+                    aux = newVar();
+                    declarar(aux, "int");
+                    PLXC.out.println("   " + aux + " = 1;");
+                    pintarEtiqueta(etFalse);
+                    PLXC.out.println("   " + ident + " = " + aux + ";");
+                }
+            }
         }
+
+        
     }
 
     public static void asigArray(String ident, String pos, String valor){

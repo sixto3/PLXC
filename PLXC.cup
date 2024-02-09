@@ -5,26 +5,27 @@ action code {:
     boolean declaracion = false;
     String cast = "";
     ArrayList<String> array;
+    String aux;
 :}
 
 
 terminal PYC, AP, CP, IF, ELSE, WHILE, DO, FOR, ALL, CLL, PRINT, COMA, AC, CC;
 terminal MAS, MENOS, POR, DIV, MENOSUNARIO, ASIG, INCR, DECR;
 terminal IGUAL, DISTINTO, MAYOR, MENOR, MENOROIGUAL, MAYOROIGUAL;
-terminal AND, OR, NEG, IMPLICA;
+terminal AND, OR, NEG, IMPLICA, DIMPLICA;
 terminal INT, FLOAT, CHAR, STRING, BOOLEAN;
-terminal CINT, CFLOAT, CCHAR;
+terminal CINT, CFLOAT, CCHAR, CBOOLEAN;
 terminal PUNTO, LENGTH;
-terminal String IDENT, ENTERO, REAL, CHARTEXT, STRINGTEXT, TRUE, FALSE, FORALL, FROM, TO, STEP;
+terminal String IDENT, ENTERO, REAL, CHARTEXT, STRINGTEXT, TRUE, FALSE, FORALL, FROM, TO, STEP, EXISTS;
 
 
 non terminal starter, lista_sent, else, declaracion, arrayLlaves;
 non terminal lista_variables_int, item_int, lista_variables_float, item_float, lista_variables_char, item_char;
 non terminal lista_variables_string, item_string, lista_variables_boolean, item_boolean;
-non terminal String exp, asignacion, while, if, do, for, valor_booleano, sent, forall, step;
+non terminal String exp, asignacion, while, if, do, for, valor_booleano, sent, forall, step, exists;
 
 precedence right ASIG;
-precedence right IMPLICA;
+precedence right IMPLICA, DIMPLICA;
 precedence left OR;
 precedence left AND;
 precedence right NEG;
@@ -96,7 +97,7 @@ exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :
                   exp:e2 {: RESULT = e2; Compilador.pintarEtiqueta(Compilador.getEtTrue(e1)); Compilador.goTo(Compilador.getEtTrue(e2)); :}
     |   NEG exp:e {: RESULT = Compilador.cambiarEtiqueta(e); :}
     |   CFLOAT {: cast = "(float)"; :} exp:e {: RESULT = e;:}
-    |   CINT {: :} exp:e {:cast = "(int)";  RESULT = Compilador.newVar(); Compilador.asigInt(RESULT, e); cast=""; :}
+    |   CINT {: :} exp:e {:cast = "(int)";  RESULT = e; /*Compilador.asigInt(RESULT, e); cast="";*/ :}
     |   CCHAR {: cast = "(char)"; :} exp:e {: RESULT = Compilador.newVar(); Compilador.declarar(RESULT, "char"); Compilador.asigAlternativo(RESULT, e, cast); cast=""; :}
     |   IDENT:i AC exp:e CC {: RESULT = Compilador.posicionArray(i, e); :}
     |   IDENT:i PUNTO LENGTH {: RESULT = i + "_length"; :}
@@ -117,6 +118,24 @@ exp ::= exp:e1 MAS exp:e2 {: RESULT = Compilador.operacion(e1, e2, "+", cast); :
     |   INCR IDENT:i {: RESULT = Compilador.preIncrementa(i); :}
     |   IDENT:i DECR {: RESULT = Compilador.postDecrementa(i); :}
     |   DECR IDENT:i {: RESULT = Compilador.preDecrementa(i); :}
+
+    |   exp:e1 DIMPLICA {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e1)); 
+                           aux = Compilador.newVar(); Compilador.declarar(aux, "boolean"); PLXC.out.println("   " + aux + " = 1;"); 
+                           Compilador.pintarEtiqueta(Compilador.getEtFalse(e1)); :}
+        exp:e2 {: Compilador.pintarEtiqueta(Compilador.getEtTrue(e2));
+                  RESULT = Compilador.pintarIf(aux, "1", "igual"); Compilador.pintarEtiqueta(Compilador.getEtFalse(e2)); 
+                  PLXC.out.print("   if (" + aux + " == 1)"); Compilador.goTo(Compilador.getEtFalse(RESULT));
+                  Compilador.goTo(Compilador.getEtTrue(RESULT)); :}
+
+    |   exists:tupla IDENT:i FROM ENTERO:ini {: PLXC.out.println("   " + i + " = " + ini + ";"); Compilador.pintarEtiqueta(Compilador.getEtTrue(tupla)); :} 
+        TO ENTERO:fin {: Compilador.pintarIfForallInt(i, fin, tupla); :} 
+        step:step COMA exp:e {: RESULT = Compilador.getEtTrue(e) + Compilador.getEtFalse(tupla);
+                                Compilador.pintarEtiqueta(Compilador.getEtFalse(e)); 
+                                PLXC.out.println("   " + i + " = " + i + " + " + step + ";");
+                                Compilador.goTo(Compilador.getEtTrue(tupla)); :}
+
+
+
     |   {::}
     ;
 
@@ -199,6 +218,9 @@ for ::= FOR {: RESULT = Compilador.generarTuplaEtiquetasString(); :}
     ;
 
 forall  ::= FORALL {: RESULT = Compilador.generarTuplaEtiquetasString(); :}
+        ;
+
+exists  ::= EXISTS {: RESULT = Compilador.generarTuplaEtiquetasString(); :}
         ;
 
 arrayLlaves ::= arrayLlaves:a COMA exp:e {: array.add(e); :}

@@ -54,6 +54,10 @@ import java_cup.runtime.*;
 "step" { return new Symbol(sym.STEP); }
 "++" { return new Symbol(sym.INCR); }
 "--" { return new Symbol(sym.DECR); }
+"(boolean)" { return new Symbol(sym.CBOOLEAN); }
+"<-->" { return new Symbol(sym.DIMPLICA); }
+"exists" { return new Symbol(sym.EXISTS); }
+
 
 
 0|[1-9][0-9]*                               { return new Symbol(sym.ENTERO, yytext());  }
