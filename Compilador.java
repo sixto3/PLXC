@@ -124,6 +124,8 @@ public class Compilador {
                 }else{
                     PLXC.out.println("   " + ident + " = " + valor + ";");
                 }
+            }else if(cast.equals("(boolean)")){
+                asigBoolean(ident, valor, cast);
             }
         }
     }
@@ -213,6 +215,15 @@ public class Compilador {
                     pintarEtiqueta(etFalse);
                     PLXC.out.println("   " + ident + " = " + aux + ";");
                 }
+            }else if(cast.equals("(boolean)")){
+                String etiquetas = pintarIf("0", valor, "igual");
+                etTrue = getEtFalse(etiquetas); etFalse = getEtTrue(etiquetas); etFinal = newEtiq();
+                pintarEtiqueta(etTrue);
+                PLXC.out.println("   " + ident + " = 1");
+                goTo(etFinal);
+                pintarEtiqueta(etFalse);
+                PLXC.out.println("   " + ident + " = 0");
+                pintarEtiqueta(etFinal);
             }
         }
 
@@ -779,6 +790,7 @@ public class Compilador {
         PLXC.out.println("   " + i + " = 1;");
         goTo(getEtTrue(tupla));
     }
+
 
     public static void pintarIfForallInt(String i, String fin, String tupla){
         PLXC.out.print("   if (" + fin + " < " + i + ")");
